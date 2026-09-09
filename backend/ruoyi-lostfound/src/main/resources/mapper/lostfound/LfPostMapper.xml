@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfPostMapper">
+    <resultMap id="LfPostResult" type="LfPost">
+        <id property="postId" column="post_id"/>
+        <result property="publisherId" column="publisher_id"/>
+        <result property="postType" column="post_type"/>
+        <result property="lifecycleStatus" column="lifecycle_status"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="itemCategoryId" column="item_category_id"/>
+        <result property="colorCategoryId" column="color_category_id"/>
+        <result property="campusCategoryId" column="campus_category_id"/>
+        <result property="areaCategoryId" column="area_category_id"/>
+        <result property="locationDetail" column="location_detail"/>
+        <result property="eventDate" column="event_date"/>
+        <result property="expireTime" column="expire_time"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="version" column="version"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="itemCategoryName" column="item_category_name"/>
+        <result property="colorCategoryName" column="color_category_name"/>
+        <result property="campusCategoryName" column="campus_category_name"/>
+        <result property="areaCategoryName" column="area_category_name"/>
+        <collection property="images" ofType="LfPostImage"
+                    select="selectPostImages" column="post_id"/>
+    </resultMap>
+
+    <sql id="selectPostVo">
+        select p.post_id, p.publisher_id, p.post_type, p.lifecycle_status, p.review_status, p.title,
+               p.description, p.item_category_id, p.color_category_id, p.campus_category_id,
+               p.area_category_id, p.location_detail, p.event_date, p.expire_time, p.view_count,
+               p.version, p.create_by, p.create_time, p.update_by, p.update_time, p.remark, p.del_flag,
+               item.category_name as item_category_name,
+               color.category_name as color_category_name,
+               campus.category_name as campus_category_name,
+               area.category_name as area_category_name
+        from lf_post p
+        left join lf_category item on item.category_id = p.item_category_id
+        left join lf_category color on color.category_id = p.color_category_id
+        left join lf_category campus on campus.category_id = p.campus_category_id
+        left join lf_category area on area.category_id = p.area_category_id
+    </sql>
+
+    <sql id="postFilters">
+        <if test="postType != null and postType != ''">
+            and p.post_type = #{postType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (p.title like concat('%', #{keyword}, '%')
+                 or p.description like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="itemCategoryId != null">
+            and p.item_category_id = #{itemCategoryId}
+        </if>
+        <if test="campusCategoryId != null">
+            and p.campus_category_id = #{campusCategoryId}
+        </if>
+        <if test="areaCategoryId != null">
+            and p.area_category_id = #{areaCategoryId}
+        </if>
+    </sql>
+
+    <select id="selectPublicPostList" parameterType="LfPost" resultMap="LfPostResult">
+        <include refid="selectPostVo"/>
+        <where>
+            p.lifecycle_status = 'PUBLISHED'
+            and p.review_status = 'APPROVED'
+            and p.del_flag = '0'
+            <include refid="postFilters"/>
+        </where>
+        order by p.create_time desc, p.post_id desc
+    </select>
+
+    <select id="selectPublicPostById" parameterType="Long" resultMap="LfPostResult">
+        <include refid="selectPostVo"/>
+        where p.post_id = #{postId}
+          and p.lifecycle_status in ('PUBLISHED', 'RESOLVED')
+          and p.review_status = 'APPROVED'
+          and p.del_flag = '0'
+    </select>
+
+    <select id="selectManagePostList" parameterType="LfPost" resultMap="LfPostResult">
+        <include refid="selectPostVo"/>
+        <where>
+            p.del_flag = '0'
+            <if test="lifecycleStatus != null and lifecycleStatus != ''">
+                and p.lifecycle_status = #{lifecycleStatus}
+            </if>
+            <if test="reviewStatus != null and reviewStatus != ''">
+                and p.review_status = #{reviewStatus}
+            </if>
+            <if test="publisherId != null">
+                and p.publisher_id = #{publisherId}
+            </if>
+            <include refid="postFilters"/>
+        </where>
+        order by p.create_time desc, p.post_id desc
+    </select>
+
+    <select id="selectPostById" parameterType="Long" resultMap="LfPostResult">
+        <include refid="selectPostVo"/>
+        where p.post_id = #{postId}
+    </select>
+
+    <select id="selectPostsToExpire" resultMap="LfPostResult">
+        <include refid="selectPostVo"/>
+        where p.lifecycle_status = 'PUBLISHED'
+          and p.review_status = 'APPROVED'
+          and p.expire_time is not null
+          and p.expire_time &lt;= sysdate()
+          and p.del_flag = '0'
+        order by p.expire_time, p.post_id
+    </select>
+
+    <resultMap id="LfPostImageResult" type="LfPostImage">
+        <id property="imageId" column="image_id"/>
+        <result property="postId" column="post_id"/>
+        <result property="objectKey" column="object_key"/>
+        <result property="accessUrl" column="access_url"/>
+        <result property="sha256" column="sha256"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="mimeType" column="mime_type"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <insert id="insertPost" parameterType="LfPost" useGeneratedKeys="true" keyProperty="postId">
+        insert into lf_post (
+            publisher_id, post_type, lifecycle_status, review_status, title, description,
+            item_category_id, color_category_id, campus_category_id, area_category_id,
+            location_detail, event_date, expire_time, view_count, version, create_by,
+            create_time, update_by, update_time, remark, del_flag
+        ) values (
+            #{publisherId}, #{postType}, #{lifecycleStatus}, #{reviewStatus}, #{title}, #{description},
+            #{itemCategoryId}, #{colorCategoryId}, #{campusCategoryId}, #{areaCategoryId},
+            #{locationDetail}, #{eventDate}, #{expireTime}, #{viewCount}, #{version}, #{createBy},
+            sysdate(), #{updateBy}, sysdate(), #{remark}, '0'
+        )
+    </insert>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <update id="updatePost" parameterType="LfPost">
+        update lf_post
+        <set>
+            <if test="postType != null and postType != ''">post_type = #{postType},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="itemCategoryId != null">item_category_id = #{itemCategoryId},</if>
+            <if test="colorCategoryId != null">color_category_id = #{colorCategoryId},</if>
+            <if test="campusCategoryId != null">campus_category_id = #{campusCategoryId},</if>
+            area_category_id = #{areaCategoryId},
+            <if test="locationDetail != null">location_detail = #{locationDetail},</if>
+            <if test="eventDate != null">event_date = #{eventDate},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            version = version + 1, update_time = sysdate()
+        </set>
+        where post_id = #{postId}
+          and publisher_id = #{publisherId}
+          and version = #{version}
+          and lifecycle_status in ('DRAFT', 'REJECTED')
+          and del_flag = '0'
+    </update>
+
+    <update id="submitPost" parameterType="LfPost">
+        update lf_post
+        set lifecycle_status = 'PENDING_REVIEW',
+            review_status = 'PENDING',
+            version = version + 1,
+            update_time = sysdate()
+        where post_id = #{postId}
+          and publisher_id = #{publisherId}
+          and version = #{version}
+          and lifecycle_status in ('DRAFT', 'REJECTED')
+          and del_flag = '0'
+    </update>
+
+    <update id="withdrawPost" parameterType="LfPost">
+        update lf_post
+        set lifecycle_status = 'WITHDRAWN',
+            version = version + 1,
+            update_time = sysdate()
+        where post_id = #{postId}
+          and publisher_id = #{publisherId}
+          and version = #{version}
+          and lifecycle_status in ('DRAFT', 'PENDING_REVIEW', 'PUBLISHED')
+          and del_flag = '0'
+    </update>
+
+    <update id="reviewPost" parameterType="LfPost">
+        update lf_post
+        set lifecycle_status = #{lifecycleStatus},
+            review_status = #{reviewStatus},
+            version = version + 1,
+            update_time = sysdate()
+        where post_id = #{postId}
+          and version = #{version}
+          and del_flag = '0'
+    </update>
+
+    <update id="increaseViewCount" parameterType="Long">
+        update lf_post
+        set view_count = view_count + 1
+        where post_id = #{postId}
+          and lifecycle_status = 'PUBLISHED'
+          and review_status = 'APPROVED'
+          and del_flag = '0'
+    </update>
+
+    <insert id="insertPostReview" parameterType="LfPostReview" useGeneratedKeys="true" keyProperty="reviewId">
+        insert into lf_post_review (
+            post_id, reviewer_id, action, before_status, after_status, reason, create_time
+        ) values (
+            #{postId}, #{reviewerId}, #{action}, #{beforeStatus}, #{afterStatus}, #{reason}, sysdate()
+        )
+    </insert>
+
+    <insert id="insertPostEvent" parameterType="LfPostEvent" useGeneratedKeys="true" keyProperty="eventId">
+        insert into lf_post_event (
+            post_id, event_type, from_status, to_status, operator_id, source, reason, create_time
+        ) values (
+            #{postId}, #{eventType}, #{fromStatus}, #{toStatus}, #{operatorId}, #{source}, #{reason}, sysdate()
+        )
+    </insert>
+
+    <select id="selectPostImages" parameterType="Long" resultMap="LfPostImageResult">
+        select image_id, post_id, object_key,
+               concat('/lostfound/post/', post_id, '/images/', image_id) as access_url,
+               sha256, sort_order, review_status, file_size, mime_type,
+               create_by, create_time, del_flag
+        from lf_post_image
+        where post_id = #{postId}
+          and del_flag = '0'
+        order by sort_order, image_id
+    </select>
+
+    <select id="selectPostImage" resultMap="LfPostImageResult">
+        select image_id, post_id, object_key,
+               concat('/lostfound/post/', post_id, '/images/', image_id) as access_url,
+               sha256, sort_order, review_status, file_size, mime_type,
+               create_by, create_time, del_flag
+        from lf_post_image
+        where post_id = #{postId}
+          and image_id = #{imageId}
+          and del_flag = '0'
+    </select>
+
+    <select id="selectPostImageByHash" resultMap="LfPostImageResult">
+        select image_id, post_id, object_key,
+               concat('/lostfound/post/', post_id, '/images/', image_id) as access_url,
+               sha256, sort_order, review_status, file_size, mime_type,
+               create_by, create_time, del_flag
+        from lf_post_image
+        where post_id = #{postId}
+          and sha256 = #{sha256}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <select id="countPostImages" parameterType="Long" resultType="int">
+        select count(1)
+        from lf_post_image
+        where post_id = #{postId}
+          and del_flag = '0'
+    </select>
+
+    <insert id="insertPostImage" parameterType="LfPostImage" useGeneratedKeys="true" keyProperty="imageId">
+        insert into lf_post_image (
+            post_id, object_key, access_url, sha256, sort_order, review_status,
+            file_size, mime_type, create_by, create_time, del_flag
+        ) values (
+            #{postId}, #{objectKey}, #{accessUrl}, #{sha256}, #{sortOrder}, #{reviewStatus},
+            #{fileSize}, #{mimeType}, #{createBy}, sysdate(), '0'
+        )
+    </insert>
+
+    <update id="updateImageAccessUrl" parameterType="LfPostImage">
+        update lf_post_image
+        set access_url = #{accessUrl}
+        where image_id = #{imageId}
+          and post_id = #{postId}
+          and del_flag = '0'
+    </update>
+
+    <update id="resolvePost" parameterType="LfPost">
+        update lf_post
+        set lifecycle_status = 'RESOLVED',
+            version = version + 1,
+            update_by = #{updateBy},
+            update_time = sysdate()
+        where post_id = #{postId}
+          and version = #{version}
+          and lifecycle_status = 'PUBLISHED'
+          and review_status = 'APPROVED'
+          and del_flag = '0'
+    </update>
+
+    <update id="expirePost" parameterType="LfPost">
+        update lf_post
+        set lifecycle_status = 'EXPIRED',
+            version = version + 1,
+            update_by = #{updateBy},
+            update_time = sysdate()
+        where post_id = #{postId}
+          and version = #{version}
+          and lifecycle_status = 'PUBLISHED'
+          and review_status = 'APPROVED'
+          and expire_time is not null
+          and expire_time &lt;= sysdate()
+          and del_flag = '0'
+    </update>
+
+    <update id="updateImageReviewStatus">
+        update lf_post_image
+        set review_status = #{reviewStatus}
+        where post_id = #{postId}
+          and del_flag = '0'
+    </update>
+</mapper>

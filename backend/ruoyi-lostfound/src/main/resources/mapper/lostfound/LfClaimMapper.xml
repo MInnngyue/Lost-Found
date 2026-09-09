@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfClaimMapper">
+    <resultMap id="LfClaimResult" type="LfClaim">
+        <id property="claimId" column="claim_id"/>
+        <result property="postId" column="post_id"/>
+        <result property="applicantId" column="applicant_id"/>
+        <result property="postOwnerId" column="post_owner_id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="status" column="status"/>
+        <result property="evidenceText" column="evidence_text"/>
+        <result property="ownerRemark" column="owner_remark"/>
+        <result property="applicantConfirmed" column="applicant_confirmed"/>
+        <result property="ownerConfirmed" column="owner_confirmed"/>
+        <result property="acceptedTime" column="accepted_time"/>
+        <result property="completedTime" column="completed_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="version" column="version"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="postTitle" column="post_title"/>
+        <result property="postType" column="post_type"/>
+        <result property="otherPartyName" column="other_party_name"/>
+        <result property="myRole" column="my_role"/>
+    </resultMap>
+
+    <select id="selectActiveClaim" resultMap="LfClaimResult">
+        select claim_id, post_id, applicant_id, post_owner_id, match_id, status,
+               evidence_text, owner_remark, applicant_confirmed, owner_confirmed,
+               accepted_time, completed_time, create_by, create_time, update_by,
+               update_time, version, del_flag
+        from lf_claim
+        where post_id = #{postId}
+          and applicant_id = #{applicantId}
+          and status in ('PENDING', 'ACCEPTED', 'HANDOFF')
+          and del_flag = '0'
+        order by claim_id desc
+        limit 1
+    </select>
+
+    <select id="selectClaimById" resultMap="LfClaimResult">
+        select claim_id, post_id, applicant_id, post_owner_id, match_id, status,
+               evidence_text, owner_remark, applicant_confirmed, owner_confirmed,
+               accepted_time, completed_time, create_by, create_time, update_by,
+               update_time, version, del_flag
+        from lf_claim
+        where claim_id = #{claimId}
+          and del_flag = '0'
+    </select>
+
+    <select id="selectClaimListForUser" resultMap="LfClaimResult">
+        select c.claim_id, c.post_id, c.applicant_id, c.post_owner_id, c.match_id,
+               c.status, c.evidence_text, c.owner_remark, c.applicant_confirmed,
+               c.owner_confirmed, c.accepted_time, c.completed_time, c.create_by,
+               c.create_time, c.update_by, c.update_time, c.version, c.del_flag,
+               p.title as post_title, p.post_type,
+               case when c.applicant_id = #{userId} then owner.nick_name else applicant.nick_name end
+                   as other_party_name,
+               case when c.applicant_id = #{userId} then 'applicant' else 'owner' end as my_role
+        from lf_claim c
+        join lf_post p on p.post_id = c.post_id
+        left join sys_user applicant on applicant.user_id = c.applicant_id
+        left join sys_user owner on owner.user_id = c.post_owner_id
+        where (c.applicant_id = #{userId} or c.post_owner_id = #{userId})
+          and c.del_flag = '0'
+        order by c.update_time desc, c.claim_id desc
+    </select>
+
+    <select id="selectClaimListByPost" resultMap="LfClaimResult">
+        select c.claim_id, c.post_id, c.applicant_id, c.post_owner_id, c.match_id,
+               c.status, c.evidence_text, c.owner_remark, c.applicant_confirmed,
+               c.owner_confirmed, c.accepted_time, c.completed_time, c.create_by,
+               c.create_time, c.update_by, c.update_time, c.version, c.del_flag,
+               p.title as post_title, p.post_type, applicant.nick_name as other_party_name,
+               'owner' as my_role
+        from lf_claim c
+        join lf_post p on p.post_id = c.post_id
+        left join sys_user applicant on applicant.user_id = c.applicant_id
+        where c.post_id = #{postId}
+          and c.del_flag = '0'
+        order by c.update_time desc, c.claim_id desc
+    </select>
+
+    <select id="selectManageClaimList" parameterType="LfClaim" resultMap="LfClaimResult">
+        select c.claim_id, c.post_id, c.applicant_id, c.post_owner_id, c.match_id,
+               c.status, c.evidence_text, c.owner_remark, c.applicant_confirmed,
+               c.owner_confirmed, c.accepted_time, c.completed_time, c.create_by,
+               c.create_time, c.update_by, c.update_time, c.version, c.del_flag,
+               p.title as post_title, p.post_type,
+               applicant.nick_name as other_party_name,
+               'admin' as my_role
+        from lf_claim c
+        join lf_post p on p.post_id = c.post_id
+        left join sys_user applicant on applicant.user_id = c.applicant_id
+        <where>
+            c.del_flag = '0'
+            <if test="status != null and status != ''">and c.status = #{status}</if>
+            <if test="postId != null">and c.post_id = #{postId}</if>
+            <if test="applicantId != null">and c.applicant_id = #{applicantId}</if>
+            <if test="postOwnerId != null">and c.post_owner_id = #{postOwnerId}</if>
+        </where>
+        order by c.update_time desc, c.claim_id desc
+    </select>
+
+    <insert id="insertClaim" parameterType="LfClaim" useGeneratedKeys="true" keyProperty="claimId">
+        insert into lf_claim (
+            post_id, applicant_id, post_owner_id, match_id, status, evidence_text,
+            owner_remark, applicant_confirmed, owner_confirmed, create_by,
+            create_time, update_by, update_time, version, del_flag
+        ) values (
+            #{postId}, #{applicantId}, #{postOwnerId}, #{matchId}, 'PENDING',
+            #{evidenceText}, null, '0', '0', #{createBy}, sysdate(), #{updateBy},
+            sysdate(), 0, '0'
+        )
+    </insert>
+
+    <update id="updateClaim" parameterType="LfClaim">
+        update lf_claim
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="applicantConfirmed != null">applicant_confirmed = #{applicantConfirmed},</if>
+            <if test="ownerConfirmed != null">owner_confirmed = #{ownerConfirmed},</if>
+            <if test="ownerRemark != null">owner_remark = #{ownerRemark},</if>
+            <if test="acceptedTime != null">accepted_time = #{acceptedTime},</if>
+            <if test="completedTime != null">completed_time = #{completedTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            version = version + 1,
+            update_time = sysdate()
+        </set>
+        where claim_id = #{claimId}
+          and version = #{version}
+          and del_flag = '0'
+          and status in ('PENDING', 'ACCEPTED', 'HANDOFF')
+    </update>
+
+    <insert id="insertClaimEvent" parameterType="LfClaimEvent" useGeneratedKeys="true" keyProperty="eventId">
+        insert into lf_claim_event (
+            claim_id, event_type, from_status, to_status, operator_id,
+            reason, request_id, create_time
+        ) values (
+            #{claimId}, #{eventType}, #{fromStatus}, #{toStatus}, #{operatorId},
+            #{reason}, #{requestId}, sysdate()
+        )
+    </insert>
+</mapper>

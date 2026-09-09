@@ -1,0 +1,230 @@
+/* Opt-in styles for the new account pages and their dialogs only. */
+.account-page {
+  width: 100%;
+  max-width: 900px;
+  min-height: calc(100vh - 60px);
+  margin: 0 auto;
+  padding: 31px 31px 48px;
+  color: var(--text-body);
+  font-family: 'HarmonyOS Sans', 'PingFang SC', sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.account-page .account-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 28px;
+}
+
+.account-page .account-title {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.account-page .account-summary {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.account-page .account-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-page .account-section + .account-section { margin-top: 32px; }
+.account-page .account-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.account-page .account-section-heading h2 {
+  color: var(--text-strong);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+.account-page .account-section-heading > svg { flex: none; color: #3b82f6; }
+.account-page .account-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.account-page .account-list { display: grid; gap: 14px; list-style: none; }
+.account-page .account-record {
+  min-width: 0;
+  padding: 22px 24px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+.account-page .account-record-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.account-page .account-record-heading h3 { color: var(--text-strong); font-size: 16px; font-weight: 600; }
+.account-page .account-record-text {
+  margin: 12px 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.account-page .account-meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.account-page .account-record-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+.account-page .account-button,
+.account-page .account-icon-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  color: var(--text-strong);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.account-page .account-button svg,
+.account-page .account-icon-button svg { flex: none; }
+.account-page .account-icon-button {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+.account-page .account-button:hover:not(:disabled),
+.account-page .account-icon-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--text-muted);
+}
+.account-page .account-button.is-primary { color: var(--surface-white); background: var(--ink); border-color: var(--ink); }
+.account-page .account-button.is-primary:hover:not(:disabled) { background: var(--ink-hover); }
+.account-page .account-icon-button.is-danger { color: var(--danger); }
+.account-page .account-button:disabled,
+.account-page .account-icon-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.account-page button:focus-visible,
+.portal-form-dialog button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.account-page .account-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.account-page .account-badge.is-info { color: #1d4ed8; background: #eff6ff; }
+.account-page .account-badge.is-warning { color: #92400e; background: #fffbeb; }
+.account-page .account-badge.is-success { color: #047857; background: #ecfdf5; }
+.account-page .account-badge.is-danger { color: #b91c1c; background: #fef2f2; }
+.account-page .account-state {
+  display: flex;
+  min-height: 180px;
+  padding: 32px 16px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.account-page .account-state > svg { width: 32px; height: 32px; color: var(--text-soft); }
+
+.portal-form-dialog {
+  max-width: calc(100vw - 32px);
+  --el-dialog-margin-top: 6vh;
+  --el-color-primary: #0f172a;
+  --el-text-color-primary: #1e293b;
+  --el-text-color-regular: #475569;
+  --el-text-color-placeholder: #64748b;
+  font-family: 'HarmonyOS Sans', 'PingFang SC', sans-serif;
+  letter-spacing: 0;
+}
+.portal-form-dialog .el-dialog__body { max-height: 65vh; overflow-y: auto; }
+.portal-form-dialog .el-dialog__title { display: block; padding-right: 28px; overflow-wrap: anywhere; }
+.portal-form-dialog .el-dialog__footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.portal-form-dialog .el-dialog__footer .el-button + .el-button { margin-left: 0; }
+.portal-form-dialog .el-form-item { margin-bottom: 22px; }
+.portal-form-dialog .el-form-item__label,
+.portal-form-dialog .dialog-field-label { color: var(--text-strong); font-size: 14px; font-weight: 600; }
+.portal-form-dialog .el-form-item__content { min-width: 0; }
+.portal-form-dialog .el-input,
+.portal-form-dialog .el-select,
+.portal-form-dialog .el-date-editor.el-input { width: 100%; min-width: 0; }
+.portal-form-dialog .el-input__wrapper,
+.portal-form-dialog .el-select__wrapper { min-height: 40px; }
+.portal-form-dialog .el-textarea__inner {
+  padding: 12px 14px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.7;
+  resize: vertical;
+}
+.portal-form-dialog .dialog-context {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-body);
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.portal-form-dialog .dialog-context-label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 12px; }
+.portal-form-dialog .dialog-error { margin: 12px 0; color: #b91c1c; font-size: 13px; overflow-wrap: anywhere; }
+.portal-form-dialog .dialog-field-label { display: block; margin-bottom: 8px; }
+.portal-form-dialog .required-mark { margin-right: 4px; color: var(--danger); }
+@media (max-width: 800px) {
+  .account-page { min-height: calc(100vh - 108px); padding: 24px 16px 36px; }
+}
+@media (max-width: 600px) {
+  .account-page .account-title { font-size: 29px; }
+  .account-page .account-record { padding: 18px 16px; }
+  .account-page .account-header { align-items: flex-start; }
+  .portal-form-dialog .el-dialog__header { padding: 18px 16px 0 !important; }
+  .portal-form-dialog .el-dialog__body { padding: 18px 16px !important; }
+  .portal-form-dialog .el-dialog__footer { padding: 10px 16px 18px !important; }
+}

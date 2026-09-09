@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfCategoryMapper">
+    <resultMap id="LfCategoryResult" type="LfCategory">
+        <id property="categoryId" column="category_id"/>
+        <result property="categoryType" column="category_type"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <sql id="selectCategoryVo">
+        select category_id, category_type, parent_id, category_code, category_name,
+               sort_order, status, create_by, create_time, update_by, update_time,
+               del_flag
+        from lf_category
+    </sql>
+
+    <select id="selectCategoryList" parameterType="LfCategory" resultMap="LfCategoryResult">
+        <include refid="selectCategoryVo"/>
+        <where>
+            del_flag = '0'
+            <if test="categoryType != null and categoryType != ''">
+                and category_type = #{categoryType}
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                and category_name like concat('%', #{categoryName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by category_type, parent_id, sort_order, category_id
+    </select>
+
+    <select id="selectEnabledCategoryList" parameterType="String" resultMap="LfCategoryResult">
+        <include refid="selectCategoryVo"/>
+        <where>
+            del_flag = '0'
+            and status = '0'
+            <if test="_parameter != null and _parameter != ''">
+                and category_type = #{_parameter}
+            </if>
+        </where>
+        order by category_type, parent_id, sort_order, category_id
+    </select>
+
+    <select id="selectCategoryById" parameterType="Long" resultMap="LfCategoryResult">
+        <include refid="selectCategoryVo"/>
+        where category_id = #{categoryId}
+    </select>
+
+    <select id="checkCategoryCodeUnique" parameterType="LfCategory" resultMap="LfCategoryResult">
+        <include refid="selectCategoryVo"/>
+        where category_type = #{categoryType}
+          and category_code = #{categoryCode}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <select id="countChildrenByParentId" parameterType="LfCategory" resultType="int">
+        select count(1)
+        from lf_category
+        where category_type = #{categoryType}
+          and parent_id = #{categoryId}
+          and del_flag = '0'
+    </select>
+
+    <insert id="insertCategory" parameterType="LfCategory" useGeneratedKeys="true" keyProperty="categoryId">
+        insert into lf_category (
+            category_type, parent_id, category_code, category_name, sort_order,
+            status, create_by, create_time, update_by, update_time, del_flag
+        ) values (
+            #{categoryType}, #{parentId}, #{categoryCode}, #{categoryName}, #{sortOrder},
+            #{status}, #{createBy}, sysdate(), #{updateBy}, sysdate(), '0'
+        )
+    </insert>
+
+    <update id="updateCategory" parameterType="LfCategory">
+        update lf_category
+        <set>
+            <if test="categoryType != null and categoryType != ''">category_type = #{categoryType},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="categoryCode != null and categoryCode != ''">category_code = #{categoryCode},</if>
+            <if test="categoryName != null and categoryName != ''">category_name = #{categoryName},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </set>
+        where category_id = #{categoryId}
+          and del_flag = '0'
+    </update>
+
+    <update id="deleteCategoryByIds">
+        update lf_category
+        set del_flag = '2', update_time = sysdate()
+        where category_id in
+        <foreach collection="array" item="categoryId" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+        and del_flag = '0'
+    </update>
+</mapper>

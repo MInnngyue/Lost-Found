@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfAppealMapper">
+    <resultMap id="LfAppealResult" type="LfAppeal">
+        <id property="appealId" column="appeal_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="actionId" column="action_id"/>
+        <result property="appellantId" column="appellant_id"/>
+        <result property="reason" column="reason"/>
+        <result property="evidence" column="evidence"/>
+        <result property="status" column="status"/>
+        <result property="reviewerId" column="reviewer_id"/>
+        <result property="reviewResult" column="review_result"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="selectAppealById" resultMap="LfAppealResult">
+        select appeal_id, case_id, action_id, appellant_id, reason, evidence,
+               status, reviewer_id, review_result, review_time, create_time
+        from lf_appeal
+        where appeal_id = #{appealId}
+    </select>
+
+    <select id="selectAppealList" parameterType="LfAppeal" resultMap="LfAppealResult">
+        select appeal_id, case_id, action_id, appellant_id, reason, evidence,
+               status, reviewer_id, review_result, review_time, create_time
+        from lf_appeal
+        <where>
+            <if test="status != null and status != ''">status = #{status}</if>
+            <if test="appellantId != null">and appellant_id = #{appellantId}</if>
+            <if test="actionId != null">and action_id = #{actionId}</if>
+        </where>
+        order by create_time desc, appeal_id desc
+    </select>
+
+    <select id="selectAppealListByUser" resultMap="LfAppealResult">
+        select appeal_id, case_id, action_id, appellant_id, reason, evidence,
+               status, reviewer_id, review_result, review_time, create_time
+        from lf_appeal
+        where appellant_id = #{appellantId}
+        order by create_time desc, appeal_id desc
+    </select>
+
+    <insert id="insertAppeal" parameterType="LfAppeal" useGeneratedKeys="true" keyProperty="appealId">
+        insert into lf_appeal (
+            case_id, action_id, appellant_id, reason, evidence, status, create_time
+        ) values (
+            #{caseId}, #{actionId}, #{appellantId}, #{reason}, #{evidence}, 'SUBMITTED', sysdate()
+        )
+    </insert>
+
+    <update id="updateAppeal" parameterType="LfAppeal">
+        update lf_appeal
+        set status = #{status},
+            reviewer_id = #{reviewerId},
+            review_result = #{reviewResult},
+            review_time = sysdate()
+        where appeal_id = #{appealId}
+          and status = 'SUBMITTED'
+    </update>
+
+    <select id="countOpenAppeal" resultType="int">
+        select count(1)
+        from lf_appeal
+        where action_id = #{actionId}
+          and appellant_id = #{appellantId}
+          and status = 'SUBMITTED'
+    </select>
+</mapper>

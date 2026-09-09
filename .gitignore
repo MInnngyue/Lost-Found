@@ -1,0 +1,48 @@
+# Local migration data and runtime credentials
+_data/
+
+# Java and IDE output
+**/target/
+**/.idea/
+**/*.iml
+**/*.log
+
+# Node output
+**/node_modules/
+**/dist/
+**/.vite/
+**/npm-debug.log*
+
+# Local environment files
+**/.env
+**/.env.local
+**/.env.*.local
+**/application-local.yml
+**/application-local.yaml
+/legacy-backend/src/main/resources/application.yaml
+
+# Local tools and generated verification output
+**/.cursor/
+**/__pycache__/
+**/*.py[cod]
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/.eslintcache
+**/.DS_Store
+**/Thumbs.db
+
+# Private credentials and backups (versioned migration SQL is kept)
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.dump
+**/*.sql.gz
+**/*.bak
+**/backups/
+
+# Runtime uploads
+**/uploads/
+/backend/runtime/

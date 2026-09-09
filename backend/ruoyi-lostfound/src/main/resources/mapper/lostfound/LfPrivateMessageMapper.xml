@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfPrivateMessageMapper">
+    <resultMap id="LfPrivateMessageResult" type="LfPrivateMessage">
+        <id property="messageId" column="message_id"/>
+        <result property="conversationKey" column="conversation_key"/>
+        <result property="fromUserId" column="from_user_id"/>
+        <result property="toUserId" column="to_user_id"/>
+        <result property="content" column="content"/>
+        <result property="contentStatus" column="content_status"/>
+        <result property="readFlag" column="read_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="nickname" column="nickname"/>
+        <result property="lastMsg" column="last_msg"/>
+        <result property="lastTime" column="last_time"/>
+        <result property="unread" column="unread"/>
+    </resultMap>
+
+    <select id="selectConversations" resultMap="LfPrivateMessageResult">
+        with ranked as (
+            select case when m.from_user_id = #{userId} then m.to_user_id else m.from_user_id end as partner_id,
+                   m.content, m.create_time,
+                   row_number() over (
+                       partition by case when m.from_user_id = #{userId} then m.to_user_id else m.from_user_id end
+                       order by m.create_time desc, m.message_id desc
+                   ) as row_num
+            from lf_private_message m
+            where (m.from_user_id = #{userId} or m.to_user_id = #{userId})
+              and m.content_status = 'VISIBLE'
+              and m.del_flag = '0'
+        ),
+        unread as (
+            select from_user_id as partner_id, count(1) as unread_count
+            from lf_private_message
+            where to_user_id = #{userId}
+              and read_flag = '0'
+              and content_status = 'VISIBLE'
+              and del_flag = '0'
+            group by from_user_id
+        )
+        select r.partner_id as to_user_id, u.nick_name as nickname,
+               r.content as last_msg, r.create_time as last_time,
+               coalesce(unread.unread_count, 0) as unread
+        from ranked r
+        left join sys_user u on u.user_id = r.partner_id
+        left join unread on unread.partner_id = r.partner_id
+        where r.row_num = 1
+        order by r.create_time desc
+    </select>
+
+    <select id="selectConversation" resultMap="LfPrivateMessageResult">
+        select message_id, conversation_key, from_user_id, to_user_id, content,
+               content_status, read_flag, create_time, del_flag
+        from lf_private_message
+        where ((from_user_id = #{userId} and to_user_id = #{otherUserId})
+            or (from_user_id = #{otherUserId} and to_user_id = #{userId}))
+          and content_status = 'VISIBLE'
+          and del_flag = '0'
+        order by create_time asc, message_id asc
+        limit 200
+    </select>
+
+    <select id="selectMessageById" resultMap="LfPrivateMessageResult">
+        select message_id, conversation_key, from_user_id, to_user_id, content,
+               content_status, read_flag, create_time, del_flag
+        from lf_private_message
+        where message_id = #{messageId}
+          and content_status = 'VISIBLE'
+          and del_flag = '0'
+    </select>
+
+    <insert id="insertMessage" parameterType="LfPrivateMessage" useGeneratedKeys="true" keyProperty="messageId">
+        insert into lf_private_message (
+            conversation_key, from_user_id, to_user_id, content,
+            content_status, read_flag, create_time, del_flag
+        ) values (
+            #{conversationKey}, #{fromUserId}, #{toUserId}, #{content},
+            'VISIBLE', '0', sysdate(), '0'
+        )
+    </insert>
+
+    <update id="markConversationRead">
+        update lf_private_message
+        set read_flag = '1'
+        where from_user_id = #{otherUserId}
+          and to_user_id = #{userId}
+          and read_flag = '0'
+          and del_flag = '0'
+    </update>
+</mapper>

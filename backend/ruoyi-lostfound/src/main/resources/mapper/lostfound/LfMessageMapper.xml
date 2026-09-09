@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.lostfound.mapper.LfMessageMapper">
+    <resultMap id="LfMessageResult" type="LfMessage">
+        <id property="messageId" column="message_id"/>
+        <result property="fromUserId" column="from_user_id"/>
+        <result property="toUserId" column="to_user_id"/>
+        <result property="messageType" column="message_type"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="relatedType" column="related_type"/>
+        <result property="relatedId" column="related_id"/>
+        <result property="readFlag" column="read_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="isRead" column="is_read"/>
+        <result property="relatedPostId" column="related_post_id"/>
+    </resultMap>
+
+    <select id="selectMessages" resultMap="LfMessageResult">
+        select message_id, from_user_id, to_user_id, message_type, title, content,
+               related_type, related_id, read_flag, create_time, del_flag,
+               case when read_flag = '1' then 1 else 0 end as is_read,
+               case when related_type = 'POST' then related_id else null end as related_post_id
+        from lf_message
+        where to_user_id = #{userId}
+          and del_flag = '0'
+        order by create_time desc, message_id desc
+        limit 100
+    </select>
+
+    <select id="countUnread" resultType="int">
+        select count(1)
+        from lf_message
+        where to_user_id = #{userId}
+          and read_flag = '0'
+          and del_flag = '0'
+    </select>
+
+    <insert id="insertMessage" parameterType="LfMessage" useGeneratedKeys="true" keyProperty="messageId">
+        insert into lf_message (
+            from_user_id, to_user_id, message_type, title, content,
+            related_type, related_id, read_flag, create_time, del_flag
+        ) values (
+            #{fromUserId}, #{toUserId}, #{messageType}, #{title}, #{content},
+            #{relatedType}, #{relatedId}, '0', sysdate(), '0'
+        )
+    </insert>
+
+    <update id="markRead">
+        update lf_message
+        set read_flag = '1'
+        where message_id = #{messageId}
+          and to_user_id = #{userId}
+          and del_flag = '0'
+    </update>
+
+    <update id="markAllRead">
+        update lf_message
+        set read_flag = '1'
+        where to_user_id = #{userId}
+          and read_flag = '0'
+          and del_flag = '0'
+    </update>
+</mapper>
